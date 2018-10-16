@@ -3,8 +3,11 @@
 
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
+from Crypto.Cipher import PKCS1_OAEP
 import os
 import hmac, hashlib
+import json
+import random
 
 
 def encrypt_message(message, public_key_path):
@@ -15,7 +18,7 @@ def encrypt_message(message, public_key_path):
     public_key = RSA.importKey(open(public_key_path, 'r').read())
 
     # set RSA encryption protocol
-    rsa_cipher = PKCS2_OAEP.new(public_key)
+    rsa_cipher = PKCS1_OAEP.new(public_key)
 
 
 #AES Encryption
@@ -29,12 +32,38 @@ def encrypt_message(message, public_key_path):
     # encrypt message
     ciphertext_aes = iv + aes_cipher.encrypt(message)
 
-    # create HMAC tag
+    # create HMAC key
     hmac_key = os.urandom(32)
 
-    hmac_object = hmac.new(hmac_key, ciphertext_aes, digestmod=hashlib.sha256)
+    # create HMAC tag
+    hmac_tag = hmac.new(hmac_key, ciphertext_aes, digestmod=hashlib.sha256)
 
     # concatenate aes and hmac keys
     keys = aes_key + hmac_key
+
+    # encrypt concatenated keys
+    ciphertext_rsa = rsa_cipher.encrypt(keys)
+
+    # create object holding values that will be returned
+    output = {}
+    output['rsa_ciphertext'] = ciphertext_rsa
+    output['aes_ciphertext'] = ciphertext_aes
+    output['hmac_tag'] = hmac_tag
+
+    output_file = 'encrypted_message.rsa'
+
+    # write output to file using json
+    out = open(output_file, 'w')
+    out.write(json.dumps(output))
+    out.close()
+
+    return output_file
+
+
+
+
+
+
+
 
 
