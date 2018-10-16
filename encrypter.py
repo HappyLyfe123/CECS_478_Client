@@ -25,6 +25,7 @@ def encrypt_message(message, public_key_path):
 
 
 #AES Encryption
+
     # iv generation referenced from https://www.novixys.com/blog/using-aes-encryption-decryption-python-pycrypto/#4_Encrypting_with_AES
     iv = ''.join([chr(random.randint(0, 0xFF)) for i in range(16)])
 
@@ -54,7 +55,7 @@ def encrypt_message(message, public_key_path):
     output = {}
     output['rsa_ciphertext'] = base64.b64encode(ciphertext_rsa).decode('utf-8')
     output['aes_ciphertext'] = base64.b64encode(ciphertext_aes).decode('utf-8')
-    output['hmac_tag'] = base64.b64encode(hmac_tag).decode('utf-8')
+    #output['hmac_tag'] = base64.b64encode(hmac_tag).decode('utf-8')
 
     output_file = 'encrypted_message.rsa'
 
@@ -62,14 +63,4 @@ def encrypt_message(message, public_key_path):
     out = open(output_file, 'w')
     out.write(json.dumps(output))
     out.close()
-
-    return output_file
-
-
-
-
-
-
-
-
 
