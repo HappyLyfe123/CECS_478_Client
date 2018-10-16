@@ -4,10 +4,13 @@
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Util import Counter
+from Crypto.Hash import HMAC, SHA256
 import os
-import hmac, hashlib
+import hashlib, hmac
 import json
 import random
+import base64
 
 
 def encrypt_message(message, public_key_path):
@@ -27,7 +30,10 @@ def encrypt_message(message, public_key_path):
 
     aes_key = os.urandom(32)
 
-    aes_cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    aes_ctr = Counter.new(128)
+
+    aes_cipher = AES.new(aes_key, AES.MODE_CTR, counter=aes_ctr)
+
 
     # encrypt message
     ciphertext_aes = iv + aes_cipher.encrypt(message)
@@ -46,9 +52,9 @@ def encrypt_message(message, public_key_path):
 
     # create object holding values that will be returned
     output = {}
-    output['rsa_ciphertext'] = ciphertext_rsa
-    output['aes_ciphertext'] = ciphertext_aes
-    output['hmac_tag'] = hmac_tag
+    output['rsa_ciphertext'] = base64.b64encode(ciphertext_rsa).decode('utf-8')
+    output['aes_ciphertext'] = base64.b64encode(ciphertext_aes).decode('utf-8')
+    output['hmac_tag'] = base64.b64encode(hmac_tag).decode('utf-8')
 
     output_file = 'encrypted_message.rsa'
 
