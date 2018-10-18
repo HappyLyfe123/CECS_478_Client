@@ -42,8 +42,11 @@ def encrypt_message(message, public_key_path):
     # create HMAC key
     hmac_key = os.urandom(32)
 
-    # create HMAC tag
-    hmac_tag = hmac.new(hmac_key, ciphertext_aes, digestmod=hashlib.sha256)
+    # create HMAC object
+    hmac_object = hmac.new(hmac_key, ciphertext_aes, digestmod=hashlib.sha256)
+
+    # create HMAC integrity tag
+    hmac_tag = hmac_object.digest()
 
     # concatenate aes and hmac keys
     keys = aes_key + hmac_key
@@ -55,7 +58,7 @@ def encrypt_message(message, public_key_path):
     output = {}
     output['rsa_ciphertext'] = base64.b64encode(ciphertext_rsa).decode('utf-8')
     output['aes_ciphertext'] = base64.b64encode(ciphertext_aes).decode('utf-8')
-    #output['hmac_tag'] = base64.b64encode(hmac_tag).decode('utf-8')
+    output['hmac_tag'] = base64.b64encode(hmac_tag).decode('utf-8')
 
     output_file = 'encrypted_message.rsa'
 
