@@ -5,29 +5,37 @@ import json
 import base64
 import zlib
 
-private_key = RSA.importKey(open('private.pem','r').read())
-print(private_key)
 
+AESKEYLENGTH = 16
+IVLENGTH = 16
+RSAKEYLENGTH = 256
 
-def decrypt_message(encrypt_message, key):
-    #Set the aes object for decryption
-    encrypt_message = base64.b64decode(encrypt_message)
-    iv = encrypt_message[:16]
-    aes = AES.new(key, AES.MODE_CBC, iv)
-    decrypt_message = aes.decrypt(encrypt_message[16:])
-
-    return decrypt_message
-
-def get_aes_key(rsa_cipher_text):
-    private_key = RSA.importKey(open('private.pem','r').read())
-    return private_key.decrypt(rsa_cipher_text)
-
-def get_data_json(path):
-    loaded_json = json.load(path)
-    rsa_cipher_text = loaded_json[0]
-    encrypt_message = loaded_json[1]
-    hmac = loaded_json[2]
-
-    return rsa_cipher_text, encrypt_message, hmac
+def decrypt_message(encrypt_message, aes_private_key_path):
     
-
+    #Get client RSA private key
+    private_key = RSA.importKey(open(aes_private_key_path,'r').read())
+    
+    #Get the encrypted message json object
+    loaded_json = json.load(encrypt_message)
+    rsa_cipher_text = loaded_json[0]
+    hmac_key = rsa_cipher_text[RSAKEYLENGTH: ]
+    encrypt_message = loaded_json[1]
+    sent_hmac = loaded_json[2]
+    
+    #Calculate hamc
+    curr_hmac = hmac.new(hmac_key, encrypt_message, digestmod=hashlib.sha256)
+    
+    private_key.decrypt(rsa_cipher_text)
+    
+    #Check if the hmac is the same
+    if curr_hmac == sent_hmac:
+        encrypt_message = base64.b64decode(encrypt_message)
+        iv = encrypt_message[:IVLENGTH]
+        aes = AES.new(key, AES.MODE_CTR, iv)
+        decrypt_message = aes.decrypt(encrypt_message[IVLENGTH:])
+        out = (open_file, 'w')
+        out.write(decrypt_message)
+        out.close()
+        return true
+    else:
+        return false

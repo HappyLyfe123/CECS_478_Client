@@ -29,6 +29,7 @@ def encrypt_message(message, public_key_path):
     # iv generation referenced from https://www.novixys.com/blog/using-aes-encryption-decryption-python-pycrypto/#4_Encrypting_with_AES
     iv = ''.join([chr(random.randint(0, 0xFF)) for i in range(16)])
 
+    # create 256 bit AES key
     aes_key = os.urandom(32)
 
     aes_ctr = Counter.new(128)
@@ -39,7 +40,7 @@ def encrypt_message(message, public_key_path):
     # encrypt message
     ciphertext_aes = iv + aes_cipher.encrypt(message)
 
-    # create HMAC key
+    # create 256-bit HMAC key
     hmac_key = os.urandom(32)
 
     # create HMAC object
