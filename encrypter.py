@@ -26,8 +26,8 @@ def encrypt_message(message, public_key_path):
 
 #AES Encryption
 
-    # iv generation referenced from https://www.novixys.com/blog/using-aes-encryption-decryption-python-pycrypto/#4_Encrypting_with_AES
-    iv = ''.join([chr(random.randint(0, 0xFF)) for i in range(16)])
+    # random iv generation
+    iv = os.urandom(16)
 
     # create 256 bit AES key
     aes_key = os.urandom(32)
