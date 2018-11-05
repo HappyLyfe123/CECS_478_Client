@@ -60,13 +60,4 @@ def encrypt_message(message, public_key_path):
     output['aes_ciphertext'] = base64.b64encode(ciphertext_aes).decode('utf-8')
     output['hmac_tag'] = base64.b64encode(hmac_tag).decode('utf-8')
 
-    json_output = json.dumps(output)
-
-    output_file = 'encrypted_message.rsa'
-
-    # write output to file using json
-#    out = open(output_file, 'w')
-#    out.write(json.dumps(output))
-#    out.close()
-
-    return json.loads(json_output)
+    return json.loads(json.dumps(output))
