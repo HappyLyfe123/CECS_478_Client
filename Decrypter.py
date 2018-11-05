@@ -1,41 +1,39 @@
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import AES
 from Crypto.Cipher import PKCS1_OAEP
-import json
+from Crypto.Cipher import AES
+from Crypto.Util import Counter
+import hashlib, hmac
 import base64
-import zlib
 
+AES_KEY_LENGTH = 32
+IV_LENGTH = 16
+RSA_KEY_LENGTH = 256
 
-AESKEYLENGTH = 16
-IVLENGTH = 16
-RSAKEYLENGTH = 256
-
-def decrypt_message(encrypt_message, aes_private_key_path):
+def decrypt_message(received_message, private_key_path, password):
     
     #Get client RSA private key
-    private_key = RSA.importKey(open(aes_private_key_path,'r').read())
+    f = open(private_key_path, 'r')
+    private_key = RSA.importKey(f.read(), passphrase= password)
+    private_key = PKCS1_OAEP.new(private_key)
     
-    #Get the encrypted message json object
-    loaded_json = json.load(encrypt_message)
-    rsa_cipher_text = loaded_json[0]
-    hmac_key = rsa_cipher_text[RSAKEYLENGTH: ]
-    encrypt_message = loaded_json[1]
-    sent_hmac = loaded_json[2]
+    #Get the encrypted message form json object
+    aes_hmac_key = private_key.decrypt(base64.b64decode(received_message['rsa_ciphertext']))
+    ciphertext_aes = base64.b64decode(received_message['aes_ciphertext'])
+    send_hmac_tag = base64.b64decode(received_message['hmac_tag'])
     
-    #Calculate hamc
-    curr_hmac = hmac.new(hmac_key, encrypt_message, digestmod=hashlib.sha256)
     
-    private_key.decrypt(rsa_cipher_text)
+    aes_key = aes_hmac_key[:AES_KEY_LENGTH]
+    hmac_key = aes_hmac_key[AES_KEY_LENGTH:]
+    
+    # create HMAC object
+    hmac_object = hmac.new(hmac_key, ciphertext_aes, digestmod=hashlib.sha256)
+
+    # create HMAC integrity tag
+        
     
     #Check if the hmac is the same
-    if curr_hmac == sent_hmac:
-        encrypt_message = base64.b64decode(encrypt_message)
-        iv = encrypt_message[:IVLENGTH]
-        aes = AES.new(key, AES.MODE_CTR, iv)
-        decrypt_message = aes.decrypt(encrypt_message[IVLENGTH:])
-        out = (open_file, 'w')
-        out.write(decrypt_message)
-        out.close()
-        return true
+    if hmac_object.digest() == send_hmac_tag:
+        aes = AES.new(aes_key, AES.MODE_CTR, counter=Counter.new(128))
+        return aes.decrypt(ciphertext_aes).decode('utf-8')
     else:
-        return false
+        return "Error"

@@ -5,11 +5,9 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Util import Counter
-from Crypto.Hash import HMAC, SHA256
 import os
 import hashlib, hmac
 import json
-import random
 import base64
 
 
@@ -37,7 +35,7 @@ def encrypt_message(message, public_key_path):
 
 
     # encrypt message
-    ciphertext_aes = iv + aes_cipher.encrypt(message)
+    ciphertext_aes = aes_cipher.encrypt(message)
 
     # create HMAC key
     hmac_key = os.urandom(32)
@@ -50,14 +48,15 @@ def encrypt_message(message, public_key_path):
 
     # concatenate aes and hmac keys
     keys = aes_key + hmac_key
+    
 
     # encrypt concatenated keys
     ciphertext_rsa = rsa_cipher.encrypt(keys)
-
+    
     # create object holding values that will be returned
     output = {}
     output['rsa_ciphertext'] = base64.b64encode(ciphertext_rsa).decode('utf-8')
     output['aes_ciphertext'] = base64.b64encode(ciphertext_aes).decode('utf-8')
     output['hmac_tag'] = base64.b64encode(hmac_tag).decode('utf-8')
-
+    
     return json.loads(json.dumps(output))
