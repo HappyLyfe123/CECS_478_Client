@@ -4,12 +4,15 @@
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Cipher import PKCS1_OAEP
-from Crypto.Util import Counter
 import os
 import hashlib, hmac
 import json
 import base64
 
+IV_LENGTH = 16
+BLOCK_SIZE = 16
+pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * \
+                chr(BLOCK_SIZE - len(s) % BLOCK_SIZE)
 
 def encrypt_message(message, public_key_path):
 
@@ -24,18 +27,19 @@ def encrypt_message(message, public_key_path):
 
 #AES Encryption
 
+    #Pad the message
+    message = pad(message)
+
     # random iv generation
-    iv = os.urandom(16)
+    iv = os.urandom(AES.block_size)
 
     aes_key = os.urandom(32)
 
-    aes_ctr = Counter.new(128)
-
-    aes_cipher = AES.new(aes_key, AES.MODE_CTR, counter=aes_ctr)
+    aes_cipher = AES.new(aes_key, AES.MODE_CBC, iv)
 
 
     # encrypt message
-    ciphertext_aes = aes_cipher.encrypt(message)
+    ciphertext_aes = iv + aes_cipher.encrypt(message)
 
     # create HMAC key
     hmac_key = os.urandom(32)
