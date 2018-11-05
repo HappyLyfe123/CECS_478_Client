@@ -29,7 +29,6 @@ def encrypt_message(message, public_key_path):
     # random iv generation
     iv = os.urandom(16)
 
-    # create 256 bit AES key
     aes_key = os.urandom(32)
 
     aes_ctr = Counter.new(128)
@@ -40,7 +39,7 @@ def encrypt_message(message, public_key_path):
     # encrypt message
     ciphertext_aes = iv + aes_cipher.encrypt(message)
 
-    # create 256-bit HMAC key
+    # create HMAC key
     hmac_key = os.urandom(32)
 
     # create HMAC object
@@ -61,10 +60,13 @@ def encrypt_message(message, public_key_path):
     output['aes_ciphertext'] = base64.b64encode(ciphertext_aes).decode('utf-8')
     output['hmac_tag'] = base64.b64encode(hmac_tag).decode('utf-8')
 
+    json_output = json.dumps(output)
+
     output_file = 'encrypted_message.rsa'
 
     # write output to file using json
-    out = open(output_file, 'w')
-    out.write(json.dumps(output))
-    out.close()
+#    out = open(output_file, 'w')
+#    out.write(json.dumps(output))
+#    out.close()
 
+    return json.loads(json_output)

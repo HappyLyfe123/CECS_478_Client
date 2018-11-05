@@ -3,22 +3,18 @@ import decrypter
 
 print('Encrypting: Attack at Dawn')
 
-public_key_path = ''
+public_key_path = '/home/jake/Documents/CECS 478/Project Code/phase 3/venv/keys/public.pem'
 private_key_path = ''
 
 encrypted_message = encrypter.encrypt_message('Attack at Dawn', public_key_path)
 
-aes = encrypted_message.__getattribute__('aes_ciphertext')
+print(encrypted_message.keys())
 
-rsa = encrypted_message.__getattribute__('rsa_ciphertext')
+aes = encrypted_message['aes_ciphertext']
+rsa = encrypted_message['rsa_ciphertext']
+hmac = encrypted_message['hmac_tag']
 
-hmac = encrypted_message.__getattribute__('hmac_tag')
+#decoded_message = decrypter.decrypt_message(encrypted_message, private_key_path)
 
-print('aes ciphertext: ' + aes)
-print('rsa ciphertext: ' + rsa)
-print('hmac tag: ' + hmac)
-
-decoded_message = decrypter.decrypt_message(encrypted_message, private_key_path)
-
-print('Decoded Message: ' + decoded_message)
+#print('Decoded Message: ' + decoded_message)
 
