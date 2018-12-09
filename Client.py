@@ -31,14 +31,23 @@ def sign_up():
 def user_login():
     while True:
         username = raw_input('Enter Username: ')
+
+        # allow user to exit program
+        if username == 'EXIT!':
+            return None, None
+
         password = raw_input('Enter Password: ')
 
-        response = requests.get('https://abconversation.us/login', data={'username': username, 'password': password}).json()
+        # allow user to exit program
+        if password == 'EXIT!':
+            return None, None
+
+        response = requests.get('https://abconversation.us/login', headers={'username': username, 'password': password}).json()
 
         if 'jwt' in response:
             return username, response.get('jwt')
         else:
-            print('Incorrect Username or Password. Please try again.')
+            print("Incorrect Username or Password. Please try again or enter EXIT! to exit")
 
 # This function will print options for the user to sign in or create an account. The function will
 # send the user info to the server and give the user more options after successful login or account creation
@@ -72,7 +81,11 @@ def login_page():
 def main():
     connection_response = requests.get('https://abconversation.us/')
 
-    print(connection_response)
+    if connection_response.status_code == 502:
+        print('Trouble connecting to server. Please try again later.')
+        return
+
+    print(json.loads(connection_response.text)['message'])
 
     print('What would you like to do?')
     username, jwt = login_page()
@@ -81,7 +94,7 @@ def main():
     if username == None:
         return
 
-    print("Welcome ", username, ". What would like to do?")
+    print("Welcome " + username + ". What would you like to do?")
     print('1. Start a new conversation')
     print('2. Send message to a friend')
     print('3. Logout')
