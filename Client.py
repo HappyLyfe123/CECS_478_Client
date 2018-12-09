@@ -1,3 +1,6 @@
+import requests
+import json
+
 def sign_up():
     username = raw_input('Enter Username: ')
 
@@ -5,17 +8,37 @@ def sign_up():
         password = raw_input('Enter Password: ')
         password2 = raw_input('Confirm Password: ')
 
+        # make sure password was entered the same way twice
         if password == password2:
-            # TODO send info to server and ensure username is unique
-            return username
+            response = requests.post('https://abconversation.us/signup', data = {'username': username, 'password': password}).json()
+
+            if 'message' in response:
+                # server created the new user
+                print(response.get('message'))
+                jwt = response.get('jwt')
+                return username, jwt
+            else:
+                # server returned an error and did not create the new user
+                print('Username not available. Please choose a different username')
+                username = raw_input('Enter Username: ')
+
         else:
             print('Password did not match confirmation. Please re-enter password')
 
+
+
 # This function allows the user to enter a username and password which will be verified by the
 def user_login():
-    username = raw_input('Enter Username: ')
-    password = raw_input('Enter Password: ')
-    #TODO send info to server and check validity
+    while True:
+        username = raw_input('Enter Username: ')
+        password = raw_input('Enter Password: ')
+
+        response = requests.get('https://abconversation.us/login', data={'username': username, 'password': password}).json()
+
+        if 'jwt' in response:
+            return username, response.get('jwt')
+        else:
+            print('Incorrect Username or Password. Please try again.')
 
 # This function will print options for the user to sign in or create an account. The function will
 # send the user info to the server and give the user more options after successful login or account creation
@@ -37,7 +60,7 @@ def login_page():
 
         elif user_input == '3':
             #exit program
-            return
+            return None, None
 
         else:
             #user input was not a usable value
@@ -47,10 +70,40 @@ def login_page():
 
 # This is the main function where other helper functions will be called
 def main():
-    print('Welcome to AB Conversation! What would you like to do?')
-    username = login_page()
+    connection_response = requests.get('https://abconversation.us/')
 
+    print(connection_response)
 
+    print('What would you like to do?')
+    username, jwt = login_page()
+
+    # exit function if user chose to exit
+    if username == None:
+        return
+
+    print("Welcome ", username, ". What would like to do?")
+    print('1. Start a new conversation')
+    print('2. Send message to a friend')
+    print('3. Logout')
+
+    while True:
+        user_input = raw_input()
+
+        if user_input == '1':
+            # Start a new conversation
+            return
+
+        elif user_input == '2':
+            # Enter a conversation with a friend that is already connected
+            return
+
+        elif user_input == '3':
+            # exit program
+            return
+
+        else:
+            #user input was not a usable value
+            print('Invalid Entry. Please try again')
 
 
 # this is where the code is initiated
