@@ -203,8 +203,19 @@ def receiveMessage(username, jwt, password):
         # decrypt message
         decrypted_message = decrypter.decrypt_message(json.loads(message["message"]), keypath, password)
 
-        # print message with sender name next to it
-        print(message.get('senderUsername') + ': ' + decrypted_message + '\n')
+        # get public key path of chosen user
+        keys = os.listdir('keys')
+
+        valid_user = False
+
+        for k in keys:
+            if k.__contains__(message.get('senderUsername') + '_public.pem'):
+                valid_user = True
+
+        #ensures that the receiver has the public key of the sender which means the receiver knows the sender
+        if valid_user:
+            # print message with sender name next to it
+            print(message.get('senderUsername') + ': ' + decrypted_message + '\n')
 
         messageID = message.get('_id')
 
