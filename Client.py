@@ -20,12 +20,14 @@ def main():
     if username == None:
         return
 
-    print("Welcome " + username + ". What would you like to do?")
-    print('1. Send a message')
-    print('2. Check for new messages')
-    print('3. Logout')
+    print("Welcome " + username + ". \n")
 
     while True:
+        print("What would you like to do?")
+        print('1. Send a message')
+        print('2. Check for new messages')
+        print('3. Logout')
+
         user_input = raw_input()
 
         if user_input == '1':
@@ -131,12 +133,12 @@ def sendMessage(username, jwt):
     # check key folder for users who have shared their public keys
     keys = os.listdir('keys')
 
-    users = {'test.pem', 'also test.pem'}
+    users = []
 
     for k in keys:
         if k != 'public.pem' and k != 'private.pem':
             # add username to set and remove filetype
-            users.add(k.replace('.pem', ''))
+            users.append(k.replace('.pem', ''))
 
     if len(users) == 0:
         #no eligible users so return to main menu
@@ -144,10 +146,31 @@ def sendMessage(username, jwt):
         return
 
     #print all eligible users with a number by their name
-    count = 1
-    for u in users:
-        print(str(count) + '. ' + u)
-        count += 1
+
+    for i in range(len(users)):
+        print(str(i + 1) + '. ' + users[i])
+
+    choice = None
+
+    try:
+        choice = int(raw_input())
+    except ValueError:
+        #reject if input is not an integer
+        print('Invalid value. Returning to menu \n')
+        return
+
+    # decrement choice because indexes are zero based
+    choice -= 1
+
+    if choice < 1 or choice >= len(users):
+        #reject if integer is not in range
+        print('Invalid value. Returning to menu \n')
+        return
+
+    message = raw_input('Message to send to ' + users[choice] + ': ')
+
+    
+
 
 
 def receiveMessage(username, jwt):
