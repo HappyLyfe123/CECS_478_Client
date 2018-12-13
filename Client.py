@@ -28,7 +28,7 @@ def main():
         print('2. Check for new messages')
         print('3. Logout')
 
-        user_input = raw_input()
+        user_input = input()
 
         if user_input == '1':
             # Start a new conversation
@@ -49,11 +49,11 @@ def main():
 
 
 def sign_up():
-    username = raw_input('Enter Username: ')
+    username = input('Enter Username: ')
 
     while True:
-        password = raw_input('Enter Password: ')
-        password2 = raw_input('Confirm Password: ')
+        password = input('Enter Password: ')
+        password2 = input('Confirm Password: ')
 
         # make sure password was entered the same way twice
         if password == password2:
@@ -67,7 +67,7 @@ def sign_up():
             else:
                 # server returned an error and did not create the new user
                 print('Username not available. Please choose a different username or type EXIT to leave')
-                username = raw_input('Enter Username: ')
+                username = input('Enter Username: ')
                 if username == 'EXIT':
                     return None, None, None
 
@@ -79,13 +79,13 @@ def sign_up():
 # This function allows the user to enter a username and password which will be verified by the
 def user_login():
     while True:
-        username = raw_input('Enter Username: ')
+        username = input('Enter Username: ')
 
         # allow user to exit program
         if username == 'EXIT!':
             return None, None, None
 
-        password = raw_input('Enter Password: ')
+        password = input('Enter Password: ')
 
         # allow user to exit program
         if password == 'EXIT!':
@@ -110,7 +110,7 @@ def login_page():
     print('3. Exit')
 
     while True:
-        user_input = raw_input()
+        user_input = input()
 
         if user_input == '1':
             #create new account
@@ -155,7 +155,7 @@ def sendMessage(username, jwt):
     choice = None
 
     try:
-        choice = int(raw_input())
+        choice = int(input())
     except ValueError:
         #reject if input is not an integer
         print('Invalid value. Returning to menu \n')
@@ -172,7 +172,7 @@ def sendMessage(username, jwt):
     #get public key path of chosen user
     keypath = 'keys/' + users[choice] + '_public.pem'
 
-    message = raw_input('Message to send to ' + users[choice] + ': ')
+    message = input('Message to send to ' + users[choice] + ': ')
 
     #encrypt message to prepare for sending
     encrypted_message = encrypter.encrypt_message(message, keypath)
