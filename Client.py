@@ -167,9 +167,20 @@ def sendMessage(username, jwt):
         print('Invalid value. Returning to menu \n')
         return
 
+    #get public key path of chosen user
+    keypath = 'keys/' + users[choice] + '.pem'
+
     message = raw_input('Message to send to ' + users[choice] + ': ')
 
-    
+    #encrypt message to prepare for sending
+    encrypted_message = encrypter.encrypt_message(message, keypath)
+
+    response = requests.post('https://abconversation.us/message', headers={'Authorization': jwt}, data={'message': json.dumps(encrypted_message), 'id' : username,'receiverUsername' : users[choice]}).json()
+
+    if 'Respond Message' in response:
+        print(response.get('Respond Message'))
+    else:
+        print(response.get('Error Message'))
 
 
 
