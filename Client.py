@@ -189,14 +189,32 @@ def sendMessage(username, jwt):
 def receiveMessage(username, jwt, password):
     response = requests.get('https://abconversation.us/message', headers={'Authorization': jwt}, data={'id' : username}).json()
 
+    if len(response) == 0:
+        print('No New Messages')
+        return
+    else:
+        print('\nMessages:')
+
     for message in response:
 
         # get private key path of user
         keypath = './keys/' + username + '_private.pem'
 
-        decrypted_message = decrypter.decrypt_message(message.get('message'), keypath, password)
+        # decrypt message
+        decrypted_message = decrypter.decrypt_message(json.loads(message["message"]), keypath, password)
 
-        print(decrypted_message)
+        # print message with sender name next to it
+        print(message.get('senderUsername') + ': ' + decrypted_message + '\n')
+
+        messageID = message.get('_id')
+
+        print(messageID)
+
+        #delete message from server
+        deleteResponse = requests.delete('https://abconversation.us/message', data={'id': messageID})
+
+        print(deleteResponse)
+
 
 # this is where the code is initiated
 main()
