@@ -190,7 +190,7 @@ def receiveMessage(username, jwt, password):
     response = requests.get('https://abconversation.us/message', headers={'Authorization': jwt}, data={'id' : username}).json()
 
     if len(response) == 0:
-        print('No New Messages')
+        print('\nNo New Messages\n')
         return
     else:
         print('\nMessages:')
@@ -208,13 +208,8 @@ def receiveMessage(username, jwt, password):
 
         messageID = message.get('_id')
 
-        print(messageID)
-
         #delete message from server
-        deleteResponse = requests.delete('https://abconversation.us/message', data={'id': messageID})
-
-        print(deleteResponse)
-
+        requests.delete('https://abconversation.us/message', headers={'id': messageID})
 
 # this is where the code is initiated
 main()
