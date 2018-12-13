@@ -14,7 +14,7 @@ def main():
     print(json.loads(connection_response.text)['message'])
 
     print('What would you like to do?')
-    username, jwt = login_page()
+    username, jwt, password = login_page()
 
     # exit function if user chose to exit
     if username == None:
@@ -35,8 +35,8 @@ def main():
             sendMessage(username, jwt)
 
         elif user_input == '2':
-            # Enter a conversation with a friend that is already connected
-            return
+            # check to see if you've received messages from friends
+            receiveMessage(username, jwt, password)
 
         elif user_input == '3':
             # exit program
@@ -63,11 +63,13 @@ def sign_up():
                 # server created the new user
                 print(response.get('message'))
                 jwt = response.get('jwt')
-                return username, jwt
+                return username, jwt, password
             else:
                 # server returned an error and did not create the new user
-                print('Username not available. Please choose a different username')
+                print('Username not available. Please choose a different username or type EXIT to leave')
                 username = raw_input('Enter Username: ')
+                if username == 'EXIT':
+                    return None, None, None
 
         else:
             print('Password did not match confirmation. Please re-enter password')
@@ -81,19 +83,19 @@ def user_login():
 
         # allow user to exit program
         if username == 'EXIT!':
-            return None, None
+            return None, None, None
 
         password = raw_input('Enter Password: ')
 
         # allow user to exit program
         if password == 'EXIT!':
-            return None, None
+            return None, None, None
 
         response = requests.get('https://abconversation.us/login', headers={'username': username, 'password': password}).json()
 
         try:
             if 'jwt' in response:
-                return username, response.get('jwt')
+                return username, response.get('jwt'), password
         except TypeError:
             #jwt was not returned so the username or password was incorrect
             print("Incorrect Username or Password. Please try again or enter EXIT! to exit")
@@ -120,7 +122,7 @@ def login_page():
 
         elif user_input == '3':
             #exit program
-            return None, None
+            return None, None, None
 
         else:
             #user input was not a usable value
@@ -136,13 +138,13 @@ def sendMessage(username, jwt):
     users = []
 
     for k in keys:
-        if k != 'public.pem' and k != 'private.pem':
+        if not k.__contains__(username) and k.__contains__('_public.pem'):
             # add username to set and remove filetype
-            users.append(k.replace('.pem', ''))
+            users.append(k.replace('_public.pem', ''))
 
     if len(users) == 0:
         #no eligible users so return to main menu
-        print('No eligible users. Please put a users public key (ex. bob.pem) in the keys folder to send a message')
+        print('No eligible users. Please put a users public key (ex. bob_public.pem) in the keys folder to send a message')
         return
 
     #print all eligible users with a number by their name
@@ -162,13 +164,13 @@ def sendMessage(username, jwt):
     # decrement choice because indexes are zero based
     choice -= 1
 
-    if choice < 1 or choice >= len(users):
+    if choice < 0 or choice >= len(users):
         #reject if integer is not in range
         print('Invalid value. Returning to menu \n')
         return
 
     #get public key path of chosen user
-    keypath = 'keys/' + users[choice] + '.pem'
+    keypath = 'keys/' + users[choice] + '_public.pem'
 
     message = raw_input('Message to send to ' + users[choice] + ': ')
 
@@ -184,9 +186,17 @@ def sendMessage(username, jwt):
 
 
 
-def receiveMessage(username, jwt):
-    response = requests.get('https://abconversation.us/message', headers={'Authorization': jwt}).json()
-    print(response)
+def receiveMessage(username, jwt, password):
+    response = requests.get('https://abconversation.us/message', headers={'Authorization': jwt}, data={'id' : username}).json()
+
+    for message in response:
+
+        # get private key path of user
+        keypath = './keys/' + username + '_private.pem'
+
+        decrypted_message = decrypter.decrypt_message(message.get('message'), keypath, password)
+
+        print(decrypted_message)
 
 # this is where the code is initiated
 main()
