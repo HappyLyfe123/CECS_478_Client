@@ -3,6 +3,8 @@ import encrypter, decrypter
 import json
 import os
 
+# author: Jacob Parcell
+
 # This is the main function where other helper functions will be called
 def main():
     connection_response = requests.get('https://abconversation.us/')
