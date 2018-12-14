@@ -1,5 +1,4 @@
 # CECS_478_Client
-Password:
-client1_private: AnderV34
-client2_private: Hello
+The purpose of the client is to encrypt and decrypt messages send between user.
+
 
